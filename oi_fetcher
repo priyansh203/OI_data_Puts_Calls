@@ -1,0 +1,59 @@
+import java.io.IOException;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+/**
+ *
+ * @author 2003
+ */
+public class oi_fetch {
+    public long getOI(){
+        String index = "banknifty";
+        String num = "23"; // for banknifty num="23"
+        String expiry = "2023-09-20";
+        String CEPE = "PE";
+        String strikePrice = "46100.00";
+        long OI_long = 0;
+
+        String url = "https://www.moneycontrol.com/india/indexfutures/" + index + "/" + num + "/" + expiry + "/OPTIDX/" + CEPE + "/" + strikePrice + "/true";
+
+        try {
+            Document document = Jsoup.connect(url).get();
+
+            // Find the div element with class "FR PA10"
+            Element divElement = document.select("div.FR.PA10").first();
+
+            if (divElement != null) {
+                // Find the table element within the div
+                Element tableElement = divElement.select("table").first();
+
+                if (tableElement != null) {
+                    // Process and extract data from the table as needed
+                    String[] cellData = new String[9];
+                    int i = 0;
+                    Elements rows = tableElement.select("tr");
+
+                    for (Element row : rows) {
+                        Elements columns = row.select("td");
+                        for (Element column : columns) {
+                            cellData[i] = column.text();
+                            i++;
+                        }
+                    }
+                    String OI_String=cellData[4].replace(",", "");
+                    OI_long = Long.parseLong(OI_String);
+//                    System.out.println(OI_long);
+                } else {
+                    System.out.println("Table not found within the div.");
+                }
+            } else {
+                System.out.println("Div element with class 'FR PA10' not found.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return OI_long;
+    }
+}
